@@ -20,7 +20,9 @@ describe Delayed::MessageSending do
     it 'creates a PerformableMethod' do
       story = Story.create
       expect do
-        job = story.tell!(1)
+        job = story.tell!(1) do |text|
+          puts text
+        end
         expect(job.payload_object.class).to eq(Delayed::PerformableMethod)
         expect(job.payload_object.method_name).to eq(:tell_without_delay!)
         expect(job.payload_object.args).to eq([1])
@@ -78,10 +80,12 @@ describe Delayed::MessageSending do
 
     it 'creates a new PerformableMethod job' do
       expect do
-        job = 'hello'.delay.count('l')
+        proc = Proc.new {}
+        job = 'hello'.delay.count('l', &proc)
         expect(job.payload_object.class).to eq(Delayed::PerformableMethod)
         expect(job.payload_object.method_name).to eq(:count)
         expect(job.payload_object.args).to eq(['l'])
+        expect(job.payload_object.block).to eq(proc)
       end.to change { Delayed::Job.count }.by(1)
     end
 

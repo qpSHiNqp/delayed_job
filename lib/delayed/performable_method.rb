@@ -1,8 +1,8 @@
 module Delayed
   class PerformableMethod
-    attr_accessor :object, :method_name, :args
+    attr_accessor :object, :method_name, :args, :block
 
-    def initialize(object, method_name, args)
+    def initialize(object, method_name, args, &block)
       raise NoMethodError, "undefined method `#{method_name}' for #{object.inspect}" unless object.respond_to?(method_name, true)
 
       if object.respond_to?(:persisted?) && !object.persisted?
@@ -12,6 +12,7 @@ module Delayed
       self.object       = object
       self.args         = args
       self.method_name  = method_name.to_sym
+      self.block        = block
     end
 
     def display_name
@@ -23,7 +24,7 @@ module Delayed
     end
 
     def perform
-      object.send(method_name, *args) if object
+      object.send(method_name, *args, &block) if object
     end
 
     def method(sym)
@@ -31,8 +32,8 @@ module Delayed
     end
 
     # rubocop:disable MethodMissing
-    def method_missing(symbol, *args)
-      object.send(symbol, *args)
+    def method_missing(symbol, *args, &block)
+      object.send(symbol, *args, &block)
     end
     # rubocop:enable MethodMissing
 

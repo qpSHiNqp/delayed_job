@@ -3,7 +3,8 @@ require 'helper'
 describe Delayed::PerformableMethod do
   describe 'perform' do
     before do
-      @method = Delayed::PerformableMethod.new('foo', :count, ['o'])
+      @proc   = Proc.new{}
+      @method = Delayed::PerformableMethod.new('foo', :count, ['o'], &@proc)
     end
 
     context 'with the persisted record cannot be found' do
@@ -17,7 +18,9 @@ describe Delayed::PerformableMethod do
     end
 
     it 'calls the method on the object' do
-      expect(@method.object).to receive(:count).with('o')
+      expect(@method.object).to receive(:count).with('o') do |*args, &block|
+        expect(@proc).to eq(block)
+      end
       @method.perform
     end
   end

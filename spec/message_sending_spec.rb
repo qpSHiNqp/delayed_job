@@ -26,6 +26,7 @@ describe Delayed::MessageSending do
         expect(job.payload_object.class).to eq(Delayed::PerformableMethod)
         expect(job.payload_object.method_name).to eq(:tell_without_delay!)
         expect(job.payload_object.args).to eq([1])
+        expect(job.payload_object.block).not_to be_nil
       end.to(change { Delayed::Job.count })
     end
 

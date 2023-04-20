@@ -78,10 +78,12 @@ end
 class Story < ActiveRecord::Base
   self.primary_key = 'story_id'
   def tell
+    yield text if block_given?
     text
   end
 
   def whatever(n, _)
+    yield tell * n if block_given?
     tell * n
   end
   default_scope { where(:scoped => true) }
